@@ -1,0 +1,49 @@
+filebeatConfig:
+  filebeat.yml: |
+    filebeat.inputs:
+      - type: log
+        enabled: true
+        paths:
+          - /var/log/containers/ingress-nginx-controller-*.log
+        symlinks: true
+        close_inactive: 30m
+        scan_frequency: 10s
+        ignore_older: 24h
+        fields:
+          component: ingress-nginx
+        fields_under_root: true
+
+        processors:
+          - add_fields:
+              fields:
+                log_type: "ingress-nginx"
+          - add_host_metadata: {}
+          - add_kubernetes_metadata:
+              in_cluster: true
+          - timestamp:
+              field: '@timestamp'
+              layouts:
+                - '2006-01-02T15:04:05.000Z07:00'
+          - drop_fields:
+              fields: ["agent", "input", "ecs", "log.offset"]
+
+    # Disable ILM/Data Stream to use classic indices
+    setup.ilm.enabled: false
+
+    # Enable and overwrite template for classic index management
+    setup.template.enabled: true
+    setup.template.name: "ingress-nginx"
+    setup.template.pattern: "ingress-nginx-*"
+    setup.template.overwrite: true
+
+    # Kibana setup
+    setup.kibana:
+      host: "http://kibana:5601"
+
+    output.elasticsearch:
+      hosts: ["https://elasticsearch-master:9200"]
+      username: elastic
+      password: 6LMEUXaEXno6u7Yq
+      ssl.verification_mode: "none"
+      protocol: "https"
+      index: "%{[fields.log_type]}-%{+yyyy.MM.dd}"
