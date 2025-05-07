@@ -1,0 +1,20 @@
+replicas: 1
+minimumMasterNodes: 1
+
+esConfig:
+  elasticsearch.yml: |
+    # Disable geoip downloader
+    ingest.geoip.downloader.enabled: false
+
+secret:
+  enabled: true
+  password: "6LMEUXaEXno6u7Yq"
+
+protocol: https
+httpPort: 9200
+
+volumeClaimTemplate:
+  accessModes: [ "ReadWriteOnce" ]
+  resources:
+    requests:
+      storage: 5Gi
